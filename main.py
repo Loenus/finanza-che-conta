@@ -51,7 +51,7 @@ def retrieve_inflation(last_month_date):
 async def callback_month(context: ContextTypes.DEFAULT_TYPE):
     current_date = datetime.datetime.now()
     month_array = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
-    last_month_name = month_array[current_date.month - 2] 
+    last_month_name = month_array[current_date.month - 2] # -1 perché current_date.month è [1,12] e month_array è [0,11], -1 perché il primo del mese deve riferirsi al mese passato
     last_month_date = last_month_name + " " + str(current_date.year)
     if current_date.month == 1:
         last_month_date = last_month_name + " " + str(current_date.year -1)
