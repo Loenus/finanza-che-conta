@@ -3,12 +3,6 @@ name: Docker Image CI
 on:
   push:
     tags: [ "v*.*.*" ]
-  workflow_call:
-    inputs:
-      version:
-        description: Version of the image
-        type: string
-        required: false
 
 jobs:
   build:
