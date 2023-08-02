@@ -4,9 +4,6 @@ on:
   push:
     branches: [ "master" ]
 
-env:
-  IMAGE_NAME: ${{ github.repository }}
-
 jobs:
   build:
     name: Push Docker image to Docker Hub
@@ -25,7 +22,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v4
       with:
-        images: loenus/${{ env.IMAGE_NAME }}
+        images: loenus/finanza-che-conta
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
