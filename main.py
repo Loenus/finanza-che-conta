@@ -66,7 +66,7 @@ Inflazione nell'ultimo anno: {inflations[1]}"""
     CHANNEL_ID = os.environ.get('CHANNEL_ID')
     await context.bot.send_message(chat_id=CHANNEL_ID, text=message)
 
-data_check = datetime.time(17,55)
+data_check = datetime.time(17,56)
 job_month = job_queue.run_monthly(callback_month, data_check, 2)
 
 application.run_polling()
