@@ -126,13 +126,16 @@ async def callback_inflation(context: ContextTypes.DEFAULT_TYPE):
     if len(inflations) != 3:
         logging.warning(f"Qualcosa è andato storto nell'estrapolare i dati dell'inflazione dal testo: '{inflations[3]}'")
     
-    # se il link inflations[2] è già presente in chat, non faccio niente in chat (è il caso in cui il bot è stato aggiornato alla versione più recente)
-    chat_messages = context.bot.get_chat_history(CHANNEL_ID, limit=30)
-    found_messages = []
-    for chat_message in chat_messages:
-        if isinstance(chat_message, Message) and chat_message.text and inflations[2] in chat_message.text:
-            found_messages.append(chat_message.text)
-    if found_messages:
+    # se il link già presente in chat, return (è il caso in cui il bot è stato aggiornato alla versione più recente)
+    url_chat = 'https://t.me/s/' + CHANNEL_ID.replace('@','')
+    response = requests.get(url_chat)
+    if response.status_code != 200:
+        logging.error(f"Errore nella richiesta HTTP [{response.status_code}]")
+        return "Errore nella richiesta HTTP"
+    soup = BeautifulSoup(response.content, "html.parser")
+    arrr = soup.find_all("a", href = inflations[2])
+    if arrr:
+        logging.info('link già trovato in chat')
         return
 
     provvisori = " (provvisori)" if is_provisional else ""
