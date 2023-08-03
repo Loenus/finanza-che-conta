@@ -108,7 +108,7 @@ def retrieve_inflation(last_month_date):
     day, month, year = next_release_text.split(' ')
     months_lower = [ x.lower() for x in MONTHS ]
     month_number = months_lower.index(month)
-    next_release_date = datetime.datetime(int(year), month_number + 1, int(day), 8,1) # at 8:01 of the specified timezone
+    next_release_date = datetime.datetime(int(year), month_number + 1, int(day), 8,1, tzinfo=ZoneInfo(TIMEZONE)) # at 8:01 of the specified timezone
     next_release_date += datetime.timedelta(days=1)
     logging.info(f"Next Release: {next_release_date}")
     job_inflation = job_queue.run_once(callback_inflation, next_release_date)
