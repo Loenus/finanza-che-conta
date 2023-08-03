@@ -10,7 +10,8 @@
 
 ### TODO
 
-- [ ] aggiungendo una richiesta direttamente all'articolo, potrei fare in modo di fare uscire anche la pubblicazione ufficiale (non provvisoria) sapendo esattamente il giorno in cui uscirà (a meno di ritardi??? gestire l'errore nel caso)
+- [X] aggiungendo una richiesta direttamente all'articolo, potrei fare in modo di fare uscire anche la pubblicazione ufficiale (non provvisoria) sapendo esattamente il giorno in cui uscirà (gestire l'errore nel caso di ritardi di pubblicazione)
+- [ ] Decidere se salvarsi o no i dati in un file, per eventualmente in futuro (o in un certo giorno) fare un resoconto? Anche se già ISTAT penso lo faccia
 - [ ] aggiungere https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/index.en.html (giornalmente)
 - [ ] add timezone
 

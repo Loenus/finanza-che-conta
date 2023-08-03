@@ -14,6 +14,7 @@ logging.basicConfig(
 )
 logging.getLogger('httpx').setLevel(logging.WARNING)
 
+CHANNEL_ID = os.environ.get('CHANNEL_ID')
 application = Application.builder().token(os.environ.get('BOT_TOKEN')).build()
 job_queue = application.job_queue
 
@@ -36,7 +37,7 @@ def retrieve_inflation(last_month_date):
     response = requests.get(URL_ISTAT + "/it/prezzi")
     if response.status_code != 200:
         logging.error(f"Errore nella richiesta HTTP [{response.status_code}]")
-        return "Errore nella richiesta HTTP"
+        return "Errore nella richiesta HTTP", None
 
     # Trovo l'articolo
     soup = BeautifulSoup(response.content, "html.parser")
@@ -54,7 +55,7 @@ def retrieve_inflation(last_month_date):
         article = soup.find("a", {"title": title_to_find})
         if not article:
             logging.warning(f"Nessun elemento a trovato con il valore title '{title_to_find}'")
-            return f"Nessun elemento a trovato con il valore title '{title_to_find}'"
+            return f"Nessun elemento a trovato con il valore title '{title_to_find}'", None
         is_provisional = True
         url_article = article['href']
         inflation_text = article.text
@@ -67,14 +68,18 @@ def retrieve_inflation(last_month_date):
     full_article = requests.get(URL_ISTAT + url_article)
     if full_article.status_code != 200:
         logging.error(f"Errore nella richiesta HTTP [{response.status_code}]")
-        return "Errore nella richiesta HTTP"
+        return "Errore nella richiesta HTTP", None
     soup2 = BeautifulSoup(full_article.content, "html.parser")
 
     # Trovo la next release e creo il job
     next_release_html = soup2.find('p', class_='nextRelease')
     if not next_release_html:
-        logging.warning("Nessun elemento a trovato aaa")
-        return "Nessun elemento a trovato aaa"
+        error_message = "Non è stata trovata nessuna data per la next Release. La prossima esecuzione verrà schedulata tra 3 settimane."
+        logging.warning(error_message)
+        job_inflation = job_queue.run_once(callback_inflation, datetime.timedelta(seconds=5))
+        inflations.append(error_message)
+        return inflations, is_provisional
+    
     next_release_text = next_release_html.span.text
     day, month, year = next_release_text.split(' ')
     months_lower = [ x.lower() for x in MONTHS ]
@@ -95,17 +100,15 @@ async def callback_inflation(context: ContextTypes.DEFAULT_TYPE):
 
     inflations, is_provisional = retrieve_inflation(last_month_date)
     if len(inflations) != 2:
-        logging.warning("Qualcosa è andato storto nell'estrapolare i dati dell'inflazione dal testo. " + str(inflations))
-    if is_provisional:
-        provvisori = " (provvisori)"
-    else: 
-        provvisori = ""
+        logging.warning(f"Qualcosa è andato storto nell'estrapolare i dati dell'inflazione dal testo: '{str(inflations)}'")
     
+    provvisori = " (provvisori)" if is_provisional else ""
     message = f"""Secondo dati ISTAT{provvisori} in Italia a {last_month_date}:
 Inflazione nel mese di {last_month_name}: {inflations[0]}
 Inflazione nell'ultimo anno: {inflations[1]}"""
+    if inflations[2]:
+        message += "\n" + inflations[2]
     
-    CHANNEL_ID = os.environ.get('CHANNEL_ID')
     await context.bot.send_message(chat_id=CHANNEL_ID, text=message)
     #check_jobs()
 
