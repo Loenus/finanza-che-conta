@@ -14,52 +14,103 @@ logging.basicConfig(
 )
 logging.getLogger('httpx').setLevel(logging.WARNING)
 
-
 application = Application.builder().token(os.environ.get('BOT_TOKEN')).build()
 job_queue = application.job_queue
 
+def check_jobs():
+    job_names = [job.name for job in job_queue.jobs()]
+    print(job_names)
+    primo = job_queue.jobs()[0]
+    next_run_time = primo.next_t
+    print(f"Next run of the job is scheduled at: {next_run_time}")
+
+
+### INFLATION ###
+
+MONTHS = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
+data_check = datetime.time(10,25, second=30)
+day_check = 3
+
 def retrieve_inflation(last_month_date): 
-    URL = "https://www.istat.it/it/prezzi"
-    response = requests.get(URL)
+    URL_ISTAT = "https://www.istat.it"
+    response = requests.get(URL_ISTAT + "/it/prezzi")
     if response.status_code != 200:
         logging.error(f"Errore nella richiesta HTTP [{response.status_code}]")
         return "Errore nella richiesta HTTP"
 
+    # Trovo l'articolo
     soup = BeautifulSoup(response.content, "html.parser")
-    title_to_find = "Prezzi al consumo (provvisori) - " + last_month_date
-    logging.info(title_to_find)
+    title_to_find = "Prezzi al consumo - " + last_month_date
+    logging.info(f"Searching for '{title_to_find}'...")
     article = soup.find("a", {"title": title_to_find})
-    if not article:
-        logging.warning(f"Nessun elemento a trovato con il valore title '{title_to_find}'")
-        return f"Nessun elemento a trovato con il valore title '{title_to_find}'"
-
-    url_article = article['href']
-    inflation_text = article.text
-    logging.info(f"Link trovato: {url_article}")
-    logging.info(f"Cosa dice: {inflation_text}")
+    if article:
+        is_provisional = False
+        url_article = article['href']
+        inflation_text = article.text
+    else:
+        logging.info(f"No article found for '{title_to_find}'")
+        title_to_find = "Prezzi al consumo (provvisori) - " + last_month_date
+        logging.info(f"Searching for '{title_to_find}'...")
+        article = soup.find("a", {"title": title_to_find})
+        if not article:
+            logging.warning(f"Nessun elemento a trovato con il valore title '{title_to_find}'")
+            return f"Nessun elemento a trovato con il valore title '{title_to_find}'"
+        is_provisional = True
+        url_article = article['href']
+        inflation_text = article.text
+    logging.info(f"Link found: {url_article}")
+    logging.info(f"Caption: '{inflation_text}'")
     percent_pattern = r"[-+]?\d+,\d+%"
     inflations = re.findall(percent_pattern, inflation_text)
-    return inflations
 
-async def callback_month(context: ContextTypes.DEFAULT_TYPE):
+    # Apro l'articolo
+    full_article = requests.get(URL_ISTAT + url_article)
+    if full_article.status_code != 200:
+        logging.error(f"Errore nella richiesta HTTP [{response.status_code}]")
+        return "Errore nella richiesta HTTP"
+    soup2 = BeautifulSoup(full_article.content, "html.parser")
+
+    # Trovo la next release e creo il job
+    next_release_html = soup2.find('p', class_='nextRelease')
+    if not next_release_html:
+        logging.warning("Nessun elemento a trovato aaa")
+        return "Nessun elemento a trovato aaa"
+    next_release_text = next_release_html.span.text
+    day, month, year = next_release_text.split(' ')
+    months_lower = [ x.lower() for x in MONTHS ]
+    month_number = months_lower.index(month)
+    next_release_date = datetime.datetime(int(year), month_number + 1, int(day), 8,1)
+    next_release_date += datetime.timedelta(days=1)
+    logging.info(f"Next Release: {next_release_date}")
+    job_inflation = job_queue.run_once(callback_inflation, next_release_date)
+    
+    return inflations, is_provisional
+
+async def callback_inflation(context: ContextTypes.DEFAULT_TYPE):
     current_date = datetime.datetime.now()
-    month_array = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
-    last_month_name = month_array[current_date.month - 2] # -1 perché current_date.month è [1,12] e month_array è [0,11], -1 perché il primo del mese deve riferirsi al mese passato
+    last_month_name = MONTHS[current_date.month - 2]
     last_month_date = last_month_name + " " + str(current_date.year)
     if current_date.month == 1:
         last_month_date = last_month_name + " " + str(current_date.year -1)
 
-    inflations = retrieve_inflation(last_month_date)
+    inflations, is_provisional = retrieve_inflation(last_month_date)
     if len(inflations) != 2:
         logging.warning("Qualcosa è andato storto nell'estrapolare i dati dell'inflazione dal testo. " + str(inflations))
-    message = f"""Secondo dati ISTAT (provvisori) in Italia a {last_month_date}:
+    if is_provisional:
+        provvisori = " (provvisori)"
+    else: 
+        provvisori = ""
+    
+    message = f"""Secondo dati ISTAT{provvisori} in Italia a {last_month_date}:
 Inflazione nel mese di {last_month_name}: {inflations[0]}
 Inflazione nell'ultimo anno: {inflations[1]}"""
-
+    
     CHANNEL_ID = os.environ.get('CHANNEL_ID')
     await context.bot.send_message(chat_id=CHANNEL_ID, text=message)
+    #check_jobs()
 
-data_check = datetime.time(20,36)
-job_month = job_queue.run_monthly(callback_month, data_check, 2)
+#################
 
+
+job_inflation = job_queue.run_once(callback_inflation, datetime.datetime.now() - datetime.timedelta(hours=2) + datetime.timedelta(seconds=3))
 application.run_polling()
