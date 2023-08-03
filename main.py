@@ -2,6 +2,7 @@ import os
 import re
 import requests
 import datetime
+from zoneinfo import ZoneInfo
 from bs4 import BeautifulSoup
 from telegram.ext import ContextTypes, Application
 from dotenv import load_dotenv
@@ -14,6 +15,7 @@ logging.basicConfig(
 )
 logging.getLogger('httpx').setLevel(logging.WARNING)
 
+TIMEZONE = os.environ.get('TIMEZONE')
 CHANNEL_ID = os.environ.get('CHANNEL_ID')
 application = Application.builder().token(os.environ.get('BOT_TOKEN')).build()
 job_queue = application.job_queue
@@ -29,8 +31,6 @@ def check_jobs():
 ### INFLATION ###
 
 MONTHS = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
-data_check = datetime.time(10,25, second=30)
-day_check = 3
 
 def retrieve_inflation(last_month_date): 
     URL_ISTAT = "https://www.istat.it"
@@ -84,7 +84,7 @@ def retrieve_inflation(last_month_date):
     day, month, year = next_release_text.split(' ')
     months_lower = [ x.lower() for x in MONTHS ]
     month_number = months_lower.index(month)
-    next_release_date = datetime.datetime(int(year), month_number + 1, int(day), 8,1)
+    next_release_date = datetime.datetime(int(year), month_number + 1, int(day), 8,1) # at 8:01 of the specified timezone
     next_release_date += datetime.timedelta(days=1)
     logging.info(f"Next Release: {next_release_date}")
     job_inflation = job_queue.run_once(callback_inflation, next_release_date)
@@ -92,7 +92,7 @@ def retrieve_inflation(last_month_date):
     return inflations, is_provisional
 
 async def callback_inflation(context: ContextTypes.DEFAULT_TYPE):
-    current_date = datetime.datetime.now()
+    current_date = datetime.datetime.now(tz=ZoneInfo(TIMEZONE))
     last_month_name = MONTHS[current_date.month - 2]
     last_month_date = last_month_name + " " + str(current_date.year)
     if current_date.month == 1:
@@ -115,5 +115,5 @@ Inflazione nell'ultimo anno: {inflations[1]}"""
 #################
 
 
-job_inflation = job_queue.run_once(callback_inflation, datetime.datetime.now() - datetime.timedelta(hours=2) + datetime.timedelta(seconds=3))
+job_inflation = job_queue.run_once(callback_inflation, datetime.datetime.now(tz=ZoneInfo(TIMEZONE)) + datetime.timedelta(seconds=3))
 application.run_polling()
