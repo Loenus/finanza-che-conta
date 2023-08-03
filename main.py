@@ -33,6 +33,29 @@ def check_jobs():
 MONTHS = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
 
 def retrieve_inflation(last_month_date): 
+    """Ricerca l'articolo ISTAT riguardo l'inflazione nel mese precedente e ne estrapola le informazioni
+
+    Parameters
+    ----------
+    last_month_date : str
+        Mese e anno di riferimento per la ricerca
+        (example: 'Luglio 2023')
+
+    Returns
+    -------
+    list
+        in ordine: 
+        due percentuali (inflazione ultimo mese ed ultimo anno), 
+        link all'articolo, errore (optional)
+    boolean
+        è un articolo con dati provvisori o no
+
+    Raises
+    ------
+    Niente
+        Se la richiesta fallisce, restituisce una stringa e None
+    """
+
     URL_ISTAT = "https://www.istat.it"
     response = requests.get(URL_ISTAT + "/it/prezzi")
     if response.status_code != 200:
@@ -63,6 +86,7 @@ def retrieve_inflation(last_month_date):
     logging.info(f"Caption: '{inflation_text}'")
     percent_pattern = r"[-+]?\d+,\d+%"
     inflations = re.findall(percent_pattern, inflation_text)
+    inflations.append(URL_ISTAT + url_article)
 
     # Apro l'articolo
     full_article = requests.get(URL_ISTAT + url_article)
@@ -99,17 +123,18 @@ async def callback_inflation(context: ContextTypes.DEFAULT_TYPE):
         last_month_date = last_month_name + " " + str(current_date.year -1)
 
     inflations, is_provisional = retrieve_inflation(last_month_date)
-    if len(inflations) != 2:
-        logging.warning(f"Qualcosa è andato storto nell'estrapolare i dati dell'inflazione dal testo: '{str(inflations)}'")
+    if len(inflations) != 3:
+        logging.warning(f"Qualcosa è andato storto nell'estrapolare i dati dell'inflazione dal testo: '{inflations[3]}'")
     
     provvisori = " (provvisori)" if is_provisional else ""
     message = f"""Secondo dati ISTAT{provvisori} in Italia a {last_month_date}:
 Inflazione nel mese di {last_month_name}: {inflations[0]}
-Inflazione nell'ultimo anno: {inflations[1]}"""
-    if len(inflations) >= 3:
-        message += "\n" + inflations[2]
+Inflazione nell'ultimo anno: {inflations[1]}
+{inflations[2]}"""
+    if len(inflations) >= 4:
+        message += "\n\n" + inflations[3]
     
-    await context.bot.send_message(chat_id=CHANNEL_ID, text=message)
+    await context.bot.send_message(chat_id=CHANNEL_ID, text=message, disable_web_page_preview=True)
     #check_jobs()
 
 #################
