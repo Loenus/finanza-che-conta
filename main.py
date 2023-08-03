@@ -15,10 +15,17 @@ logging.basicConfig(
 )
 logging.getLogger('httpx').setLevel(logging.WARNING)
 
+ENV = os.environ.get('ENV')
 TIMEZONE = os.environ.get('TIMEZONE')
 CHANNEL_ID = os.environ.get('CHANNEL_ID')
 application = Application.builder().token(os.environ.get('BOT_TOKEN')).build()
 job_queue = application.job_queue
+
+def next_weekday(d, weekday):
+    days_ahead = weekday - d.weekday()
+    if days_ahead <= 0: # Target day already happened this week
+        days_ahead += 7
+    return d + datetime.timedelta(days_ahead)
 
 def check_jobs():
     job_names = [job.name for job in job_queue.jobs()]
@@ -133,9 +140,9 @@ async def callback_inflation(context: ContextTypes.DEFAULT_TYPE):
         logging.error(f"Errore nella richiesta HTTP [{response.status_code}]")
         return "Errore nella richiesta HTTP"
     soup = BeautifulSoup(response.content, "html.parser")
-    arrr = soup.find_all("a", href = inflations[2])
-    if arrr:
-        logging.info('link già trovato in chat')
+    arrr = soup.find("a", href = inflations[2])
+    if arrr and ENV == "prod":
+        logging.info('link già trovato in chat.')
         return
 
     provvisori = " (provvisori)" if is_provisional else ""
@@ -152,5 +159,35 @@ Inflazione nell'ultimo anno: {inflations[1]}
 #################
 
 
+### EURO STR ###
+
+URL_EU = "https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/index.en.html"
+
+def retrieve_euro_str():
+    response = requests.get(URL_EU)
+    if response.status_code != 200:
+        logging.error(f"Errore nella richiesta HTTP [{response.status_code}]")
+        return "Errore nella richiesta HTTP"
+    soup = BeautifulSoup(response.content, "html.parser")
+    euro_str_value = soup.find('td').strong.text
+    if not euro_str_value:
+        logging.warning('valore di STR eur non trovato.')
+        return 'valore di STR eur non trovato.'
+    return euro_str_value
+
+async def callback_euro_str(context: ContextTypes.DEFAULT_TYPE):
+    euro_str_value = retrieve_euro_str()
+    message = f"Euro short-term rate (€STR) odierno: {euro_str_value}\n{URL_EU}"
+    await context.bot.send_message(chat_id=CHANNEL_ID, text=message)
+
+################
+
 job_inflation = job_queue.run_once(callback_inflation, datetime.datetime.now(tz=ZoneInfo(TIMEZONE)) + datetime.timedelta(seconds=3))
+if ENV == "dev":
+    job_euro_str = job_queue.run_repeating(callback_euro_str, datetime.timedelta(seconds=15), datetime.datetime.now(tz=ZoneInfo(TIMEZONE))+ datetime.timedelta(seconds=1))
+else:
+    d = datetime.datetime.now(tz=ZoneInfo(TIMEZONE))
+    next_monday = next_weekday(d, 0).replace(hour=8,minute=0,second=0) # 0 = Monday, 1=Tuesday ..
+    logging.info(f"Prima esecuzione per la ricerca dell'EURO STR schedulata per {str(next_monday)}. Successivamente ogni lunedì.")
+    job_euro_str = job_queue.run_repeating(callback_euro_str, datetime.timedelta(weeks=1), next_monday)
 application.run_polling()
