@@ -76,7 +76,7 @@ def retrieve_inflation(last_month_date):
     if not next_release_html:
         error_message = "Non è stata trovata nessuna data per la next Release. La prossima esecuzione verrà schedulata tra 3 settimane."
         logging.warning(error_message)
-        job_inflation = job_queue.run_once(callback_inflation, datetime.timedelta(seconds=5))
+        job_inflation = job_queue.run_once(callback_inflation, datetime.timedelta(weeks=3))
         inflations.append(error_message)
         return inflations, is_provisional
     
@@ -106,7 +106,7 @@ async def callback_inflation(context: ContextTypes.DEFAULT_TYPE):
     message = f"""Secondo dati ISTAT{provvisori} in Italia a {last_month_date}:
 Inflazione nel mese di {last_month_name}: {inflations[0]}
 Inflazione nell'ultimo anno: {inflations[1]}"""
-    if inflations[2]:
+    if len(inflations) >= 3:
         message += "\n" + inflations[2]
     
     await context.bot.send_message(chat_id=CHANNEL_ID, text=message)
