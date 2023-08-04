@@ -1,7 +1,12 @@
 <p align="center">
-  <a href="https://bun.sh"><img src="logo.png" alt="Logo" height=170></a>
+  <img src="logo.png" alt="Logo" height=170 vspace="1">
 </p>
-<h3 align="center">Finanza che conta <br> Telegram Bot</h3>
+<h1 align="center">Finanza che conta <br> Telegram Bot</h1>
+
+<p align="center">
+  <img src="https://img.shields.io/github/repo-size/Loenus/finanza-che-conta" alt="GitHub repo size"/>
+  <a href="https://github.com/Loenus/finanza-che-conta/actions/workflows/docker-image.yml"><img src="https://github.com/Loenus/finanza-che-conta/actions/workflows/docker-image.yml/badge.svg" alt="Docker Image CI"/></a>
+</p>
 
 ## What it does
 
@@ -28,17 +33,3 @@ zoneinfo.available_timezones()
   - [X] un job settimanale (lunedì) che ne comunica il valore aggiornato (altri dati no? magari in combinazione con il secondo, segnala l'andamento settimanale..) 
   - [ ] un job quotidiano che controlla l'oscillazione senza comunicarla in chat. Se negli ultimi giorni (quanti?) la variazione è elevata, lo segnala in chat. (Come? controlla la memoria persiste tra i jobs)
 - [ ] Valutare se salvarsi i dati in un file della repo (per eventuale resoconto periodico)
-
-
-<style>
-  .container {
-    width: 100%; display: grid; 
-    place-content: center; 
-    place-items: center; 
-    grid-template-columns: 4fr 4fr 4fr; 
-    margin-top:1px;
-  }
-  .sub-image {
-    max-width: 200px;
-  }
-</style>
