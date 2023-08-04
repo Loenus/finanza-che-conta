@@ -1,6 +1,6 @@
-<div style="width: 100%; display: grid; place-content: center; place-items: center; grid-template-columns: 4fr 4fr 4fr; margin-top:1px">
+<div class="container">
     <h3>Finanza che conta</h3>
-    <img height='170' src="logo.png" style="max-width: 200px;">
+    <img height='170' src="logo.png" class="sub-image">
     <h3>Telegram Bot</h3>
 </div>
 
@@ -29,3 +29,17 @@ zoneinfo.available_timezones()
   - [X] un job settimanale (lunedì) che ne comunica il valore aggiornato (altri dati no? magari in combinazione con il secondo, segnala l'andamento settimanale..) 
   - [ ] un job quotidiano che controlla l'oscillazione senza comunicarla in chat. Se negli ultimi giorni (quanti?) la variazione è elevata, lo segnala in chat. (Come? controlla la memoria persiste tra i jobs)
 - [ ] Valutare se salvarsi i dati in un file della repo (per eventuale resoconto periodico)
+
+
+<style>
+  .container {
+    width: 100%; display: grid; 
+    place-content: center; 
+    place-items: center; 
+    grid-template-columns: 4fr 4fr 4fr; 
+    margin-top:1px;
+  }
+  .sub-image {
+    max-width: 200px;
+  }
+</style>
