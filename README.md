@@ -1,24 +1,31 @@
-### Link utili
+<div style="width: 100%; display: grid; place-content: center; place-items: center; grid-template-columns: 4fr 4fr 4fr; margin-top:1px">
+    <h3>Finanza che conta</h3>
+    <img height='170' src="logo.png" style="max-width: 200px;">
+    <h3>Telegram Bot</h3>
+</div>
 
-[Python-telegram-bot documentation](https://github.com/python-telegram-bot/python-telegram-bot/wiki) <br>
-[Job Queue documentation](https://docs.python-telegram-bot.org/en/stable/telegram.ext.jobqueue.html) <br>
-[Docker Image Uploading](https://dev.to/derlin/lets-code-a-reusable-workflow-for-building-state-of-the-art-multi-platform-docker-images-with-github-action-5cj9#tags)<br>
-[Docker Image Uploading 2](https://docs.docker.com/build/ci/github-actions/manage-tags-labels/) <br>
-[Markdown Extended](https://www.markdownguide.org/extended-syntax/#fenced-code-blocks) <br>
+## What it does
 
-Per controllare quali TimeZone sono disponibili, eseguire in python: 
+Periodicamente (circa ogni due settimane, quando esce il comunicato stampa della ISTAT) manda un messaggio su telegram indicando il cambiamento dell'inflation rate in Italia; inoltre, ogni lunedì manda un messaggio con il valore dell'€STR.
+
+## How to self host
+
+È possibile trovare la docker image di questa repo su [DockerHub](https://hub.docker.com/r/loenus/finanza-che-conta).<br>
+Quindi sarà sufficiente avere una macchina linux su cui eseguire le istruzioni riportate su DockerHub.
+
+Ricordarsi di creare o settare le [variabili d'ambiente](https://docs.docker.com/engine/reference/commandline/run/#env), elencate nel file `.env.sample` <br>
+A tal proposito, per controllare quali TimeZone sono disponibili, eseguire in python: 
 ```
 import zoneinfo
 zoneinfo.available_timezones()
 ```
 
+<br><br>
 <hr>
 
 ### TODO
 
-- [X] aggiungendo una richiesta direttamente all'articolo, potrei fare in modo di fare uscire anche la pubblicazione ufficiale (non provvisoria) sapendo esattamente il giorno in cui uscirà (gestire l'errore nel caso di ritardi di pubblicazione)
-- [X] add timezone
 - [ ] aggiungere https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/index.en.html (giornalmente)
-  - un job settimanale (lunedì) che ne comunica il valore aggiornato (altri dati no? magari in combinazione con il secondo, segnala l'andamento settimanale..) 
-  - un job quotidiano che controlla l'oscillazione senza comunicarla in chat. Se negli ultimi giorni (quanti?) la variazione è elevata, lo segnala in chat. (Come? controlla la memoria persiste tra i jobs)
+  - [X] un job settimanale (lunedì) che ne comunica il valore aggiornato (altri dati no? magari in combinazione con il secondo, segnala l'andamento settimanale..) 
+  - [ ] un job quotidiano che controlla l'oscillazione senza comunicarla in chat. Se negli ultimi giorni (quanti?) la variazione è elevata, lo segnala in chat. (Come? controlla la memoria persiste tra i jobs)
 - [ ] Valutare se salvarsi i dati in un file della repo (per eventuale resoconto periodico)

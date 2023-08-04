@@ -182,6 +182,7 @@ async def callback_euro_str(context: ContextTypes.DEFAULT_TYPE):
 
 ################
 
+
 job_inflation = job_queue.run_once(callback_inflation, datetime.datetime.now(tz=ZoneInfo(TIMEZONE)) + datetime.timedelta(seconds=3))
 if ENV == "dev":
     job_euro_str = job_queue.run_repeating(callback_euro_str, datetime.timedelta(seconds=15), datetime.datetime.now(tz=ZoneInfo(TIMEZONE))+ datetime.timedelta(seconds=1))
