@@ -10,7 +10,7 @@
 
 ## Why
 
-La finanza è un *gioco a lungo termine*, ma ci sono alcuni indicatori più concreti, attuali e tangibili di altri. Però, chi ha tempo di monitorarli con regolarità e ricordarsi di farlo? Immagina questo: un bot che manda massimo due notifiche a settimana su un'app che già utilizzi. Lascia che la tecnologia lavori per te, così puoi concentrarti sul prendere decisioni informate con il minor sforzo possibile.
+La finanza è un *gioco a lungo termine*, ma ci sono alcuni indicatori più concreti, attuali e tangibili di altri. Però, chi ha tempo di monitorarli con regolarità e ricordarsi di farlo? Immagina questo: un bot che manda massimo due notifiche a settimana su un'app che già utilizzi. Lascia che la tecnologia lavori per te, così puoi concentrarti sul prendere decisioni informate con il minor sforzo possibile. Arrivederci FOMO, buongiornissimo caffè!
 
 ## What it does
 
