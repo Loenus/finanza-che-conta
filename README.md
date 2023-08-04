@@ -1,8 +1,7 @@
-<div class="container">
-    <h3>Finanza che conta</h3>
-    <img height='170' src="logo.png" class="sub-image">
-    <h3>Telegram Bot</h3>
-</div>
+<p align="center">
+  <a href="https://bun.sh"><img src="logo.png" alt="Logo" height=170></a>
+</p>
+<h3 align="center">Finanza che conta <br> Telegram Bot</h3>
 
 ## What it does
 
