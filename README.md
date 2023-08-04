@@ -9,7 +9,7 @@
 </p>
 
 <div align="center">
-  <a href="https://t.me/finanzacheconta"><strong>Telegram Bot Hosted</strong></a>
+  <a href="https://t.me/finanzacheconta"><strong>Telegram Bot Channel</strong></a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://github.com/Loenus/finanza-che-conta/issues/new">Issues</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
