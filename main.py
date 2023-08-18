@@ -91,7 +91,7 @@ def retrieve_inflation(last_month_date):
         inflation_text = article.text
     logging.info(f"Link found: {url_article}")
     logging.info(f"Caption: '{inflation_text}'")
-    percent_pattern = r"[-+]?\d+,\d+%"
+    percent_pattern = r"[-+]?\d+,\d+%|\bnulla\b"
     inflations = re.findall(percent_pattern, inflation_text)
     inflations.append(URL_ISTAT + url_article)
 
@@ -120,6 +120,7 @@ def retrieve_inflation(last_month_date):
     logging.info(f"Next Release: {next_release_date}")
     job_inflation = job_queue.run_once(callback_inflation, next_release_date)
     
+    # inflations: % ultimo mese, % ultimo anno, link articolo, (optional) messaggio di errore
     return inflations, is_provisional
 
 async def callback_inflation(context: ContextTypes.DEFAULT_TYPE):
@@ -130,7 +131,7 @@ async def callback_inflation(context: ContextTypes.DEFAULT_TYPE):
         last_month_date = last_month_name + " " + str(current_date.year -1)
 
     inflations, is_provisional = retrieve_inflation(last_month_date)
-    if len(inflations) != 3:
+    if len(inflations) != 3: # allora contiene un quarto campo, ovvero l'errore
         logging.warning(f"Qualcosa è andato storto nell'estrapolare i dati dell'inflazione dal testo: '{inflations[3]}'")
     
     # se il link già presente in chat, return (è il caso in cui il bot è stato aggiornato alla versione più recente)
@@ -140,8 +141,8 @@ async def callback_inflation(context: ContextTypes.DEFAULT_TYPE):
         logging.error(f"Errore nella richiesta HTTP [{response.status_code}]")
         return "Errore nella richiesta HTTP"
     soup = BeautifulSoup(response.content, "html.parser")
-    arrr = soup.find("a", href = inflations[2])
-    if arrr and ENV == "prod":
+    link_last_article = soup.find("a", href = inflations[2])
+    if link_last_article and ENV == "prod":
         logging.info('link già trovato in chat.')
         return
 
