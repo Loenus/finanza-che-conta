@@ -5,6 +5,7 @@ import datetime
 from zoneinfo import ZoneInfo
 from bs4 import BeautifulSoup
 from telegram.ext import ContextTypes, Application
+from telegram.constants import ParseMode
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -146,15 +147,18 @@ async def callback_inflation(context: ContextTypes.DEFAULT_TYPE):
         logging.info('link già trovato in chat.')
         return
 
+    inflations[0] = f"`{inflations[0].replace(',', '.')}`"
+    inflations[1] = f"`{inflations[1].replace(',', '.')}`"
+
     provvisori = " (provvisori)" if is_provisional else ""
-    message = f"""Secondo dati ISTAT{provvisori} in Italia a {last_month_date}:
-Inflazione nel mese di {last_month_name}: {inflations[0]}
-Inflazione nell'ultimo anno: {inflations[1]}
-{inflations[2]}"""
+    message = f"""Secondo [dati ISTAT{provvisori}]({inflations[2]}) in Italia a {last_month_date}:
+Inflazione nel mese di *{last_month_name}*: {inflations[0]}
+Inflazione nell'*ultimo anno*: {inflations[1]}
+"""
     if len(inflations) >= 4:
         message += "\n\n" + inflations[3]
     
-    await context.bot.send_message(chat_id=CHANNEL_ID, text=message, disable_web_page_preview=True)
+    await context.bot.send_message(chat_id=CHANNEL_ID, text=message, disable_web_page_preview=True, parse_mode = ParseMode.MARKDOWN)
     #check_jobs()
 
 #################
@@ -178,8 +182,8 @@ def retrieve_euro_str():
 
 async def callback_euro_str(context: ContextTypes.DEFAULT_TYPE):
     euro_str_value = retrieve_euro_str()
-    message = f"Euro short-term rate (€STR) odierno: {euro_str_value}\n{URL_EU}"
-    await context.bot.send_message(chat_id=CHANNEL_ID, text=message)
+    message = f"[Euro short-term rate]({URL_EU}) (`€STR`) odierno: `{euro_str_value}`"
+    await context.bot.send_message(chat_id=CHANNEL_ID, text=message, disable_web_page_preview=True, parse_mode = ParseMode.MARKDOWN)
 
 ################
 
