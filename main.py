@@ -193,7 +193,7 @@ if ENV == "dev":
     job_euro_str = job_queue.run_repeating(callback_euro_str, datetime.timedelta(seconds=15), datetime.datetime.now(tz=ZoneInfo(TIMEZONE))+ datetime.timedelta(seconds=1))
 else:
     d = datetime.datetime.now(tz=ZoneInfo(TIMEZONE))
-    next_monday = next_weekday(d, 0).replace(hour=8,minute=0,second=0) # 0 = Monday, 1=Tuesday ..
+    next_monday = next_weekday(d, 0).replace(hour=8,minute=30,second=0) # 0 = Monday, 1=Tuesday ..
     logging.info(f"Prima esecuzione per la ricerca dell'EURO STR schedulata per {str(next_monday)}. Successivamente ogni lunedì.")
     job_euro_str = job_queue.run_repeating(callback_euro_str, datetime.timedelta(weeks=1), next_monday)
 application.run_polling()
