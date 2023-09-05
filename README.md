@@ -6,6 +6,7 @@
 <p align="center">
   <img src="https://img.shields.io/github/repo-size/Loenus/finanza-che-conta" alt="GitHub repo size"/>
   <a href="https://github.com/Loenus/finanza-che-conta/actions/workflows/docker-image.yml"><img src="https://github.com/Loenus/finanza-che-conta/actions/workflows/docker-image.yml/badge.svg" alt="Docker Image CI"/></a>
+  <a href="https://t.me/finanzacheconta"><img src="https://img.shields.io/endpoint?style=flat&url=https://runkit.io/loenus/badge-subscribers/branches/master?url=https://t.me/finanzacheconta" alt="Custom badge for subscribers"/></a>
 </p>
 
 <div align="center">
