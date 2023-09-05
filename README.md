@@ -32,8 +32,5 @@ Periodicamente (circa ogni due settimane, quando esce il comunicato stampa della
 Quindi sarà sufficiente avere una macchina linux su cui eseguire le istruzioni riportate su DockerHub.
 
 Ricordarsi di creare o settare le [variabili d'ambiente](https://docs.docker.com/engine/reference/commandline/run/#env), elencate nel file `.env.sample` <br>
-A tal proposito, per controllare quali TimeZone sono disponibili, eseguire in python: 
-```python
-import zoneinfo
-print( zoneinfo.available_timezones() )
-```
+A tal proposito, see [List of tz database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) for valid options.
+
