@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 from bs4 import BeautifulSoup
 from telegram.ext import ContextTypes, Application
 from telegram.constants import ParseMode
+from telegram.error import BadRequest, TimedOut
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -21,6 +22,18 @@ TIMEZONE = os.environ.get('TIMEZONE')
 CHANNEL_ID = os.environ.get('CHANNEL_ID')
 application = Application.builder().token(os.environ.get('BOT_TOKEN')).build()
 job_queue = application.job_queue
+
+# Error handler for Bad Gateway
+def bad_gateway_error_handler(update, context):
+    logging.error(f"Bad Gateway error occurred: {context.error} ({update})")
+
+# Error handler for Flood control exceeded
+def flood_control_error_handler(update, context):
+    logging.warning(f"Flood control exceeded: {context.error} ({update})")
+
+# Add error handlers to your Application object
+application.add_error_handler(BadRequest, bad_gateway_error_handler)
+application.add_error_handler(TimedOut, flood_control_error_handler)
 
 def next_weekday(d, weekday):
     days_ahead = weekday - d.weekday()
@@ -40,7 +53,7 @@ def check_jobs():
 
 MONTHS = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
 
-def retrieve_inflation(last_month_date): 
+def retrieve_inflation_ISTAT(last_month_date): 
     """Ricerca l'articolo ISTAT riguardo l'inflazione nel mese precedente e ne estrapola le informazioni
 
     Parameters
@@ -64,8 +77,7 @@ def retrieve_inflation(last_month_date):
         Se la richiesta fallisce, restituisce una stringa e None
     """
 
-    URL_ISTAT = "https://www.istat.it"
-    response = requests.get(URL_ISTAT + "/it/prezzi")
+    response = requests.get("https://www.istat.it/it/prezzi")
     if response.status_code != 200:
         logging.error(f"Errore nella richiesta HTTP [{response.status_code}]")
         return "Errore nella richiesta HTTP", None
@@ -131,7 +143,7 @@ async def callback_inflation(context: ContextTypes.DEFAULT_TYPE):
     if current_date.month == 1:
         last_month_date = last_month_name + " " + str(current_date.year -1)
 
-    inflations, is_provisional = retrieve_inflation(last_month_date)
+    inflations, is_provisional = retrieve_inflation_ISTAT(last_month_date)
     if len(inflations) != 3: # allora contiene un quarto campo, ovvero l'errore
         logging.warning(f"Qualcosa è andato storto nell'estrapolare i dati dell'inflazione dal testo: '{inflations[3]}'")
     
