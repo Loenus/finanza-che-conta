@@ -76,8 +76,9 @@ def retrieve_inflation_ISTAT(last_month_date):
     Niente
         Se la richiesta fallisce, restituisce una stringa e None
     """
-
-    response = requests.get("https://www.istat.it/it/prezzi")
+    
+    URL_ISTAT = "https://www.istat.it"
+    response = requests.get(URL_ISTAT + "/it/prezzi")
     if response.status_code != 200:
         logging.error(f"Errore nella richiesta HTTP [{response.status_code}]")
         return "Errore nella richiesta HTTP", None
@@ -123,15 +124,15 @@ def retrieve_inflation_ISTAT(last_month_date):
         job_inflation = job_queue.run_once(callback_inflation, datetime.timedelta(weeks=3))
         inflations.append(error_message)
         return inflations, is_provisional
-    
-    next_release_text = next_release_html.span.text
-    day, month, year = next_release_text.split(' ')
-    months_lower = [ x.lower() for x in MONTHS ]
-    month_number = months_lower.index(month)
-    next_release_date = datetime.datetime(int(year), month_number + 1, int(day), 8,1, tzinfo=ZoneInfo(TIMEZONE)) # at 8:01 of the specified timezone
-    next_release_date += datetime.timedelta(days=1)
-    logging.info(f"Next Release: {next_release_date}")
-    job_inflation = job_queue.run_once(callback_inflation, next_release_date)
+    else:
+        next_release_text = next_release_html.span.text
+        day, month, year = next_release_text.split(' ')
+        months_lower = [ x.lower() for x in MONTHS ]
+        month_number = months_lower.index(month)
+        next_release_date = datetime.datetime(int(year), month_number + 1, int(day), 8,1, tzinfo=ZoneInfo(TIMEZONE)) # at 8:01 of the specified timezone
+        next_release_date += datetime.timedelta(days=1)
+        logging.info(f"Next Release: {next_release_date}")
+        job_inflation = job_queue.run_once(callback_inflation, next_release_date)
     
     # inflations: % ultimo mese, % ultimo anno, link articolo, (optional) messaggio di errore
     return inflations, is_provisional
