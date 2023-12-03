@@ -24,16 +24,16 @@ application = Application.builder().token(os.environ.get('BOT_TOKEN')).build()
 job_queue = application.job_queue
 
 # Error handler for Bad Gateway
-def bad_gateway_error_handler(update, context):
-    logging.error(f"Bad Gateway error occurred: {context.error} ({update})")
+# def bad_gateway_error_handler(update, context):
+#     logging.error(f"Bad Gateway error occurred: {context.error} ({update})")
 
-# Error handler for Flood control exceeded
-def flood_control_error_handler(update, context):
-    logging.warning(f"Flood control exceeded: {context.error} ({update})")
+# # Error handler for Flood control exceeded
+# def flood_control_error_handler(update, context):
+#     logging.warning(f"Flood control exceeded: {context.error} ({update})")
 
 # Add error handlers to your Application object
-application.add_error_handler(BadRequest, bad_gateway_error_handler)
-application.add_error_handler(TimedOut, flood_control_error_handler)
+# application.add_error_handler(BadRequest, bad_gateway_error_handler)
+# application.add_error_handler(TimedOut, flood_control_error_handler)
 
 def next_weekday(d, weekday):
     days_ahead = weekday - d.weekday()
