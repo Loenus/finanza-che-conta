@@ -146,7 +146,8 @@ async def callback_inflation(context: ContextTypes.DEFAULT_TYPE):
 
     inflations, is_provisional = retrieve_inflation_ISTAT(last_month_date)
     if len(inflations) != 3: # allora contiene un quarto campo, ovvero l'errore
-        logging.warning(f"Qualcosa è andato storto nell'estrapolare i dati dell'inflazione dal testo: '{inflations[3]}'")
+        logging.warning(f"Qualcosa è andato storto nell'estrapolare i dati dell'inflazione dal testo: '{inflations}'")
+        return
     
     # se il link già presente in chat, return (è il caso in cui il bot è stato aggiornato alla versione più recente)
     url_chat = 'https://t.me/s/' + CHANNEL_ID.replace('@','')
