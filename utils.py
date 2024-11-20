@@ -1,15 +1,28 @@
-import datetime
+import logging
+import os
+from telegram import Bot
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-def next_weekday(d, weekday):
-    days_ahead = weekday - d.weekday()
-    if days_ahead <= 0: # Target day already happened this week
-        days_ahead += 7
-    return d + datetime.timedelta(days_ahead)
+CHANNEL_ID = os.getenv('CHANNEL_ID')
+TOKEN = os.getenv('BOT_TOKEN')
+TIMEZONE = os.getenv('TIMEZONE')
 
-def check_jobs(job_queue):
-    job_names = [job.name for job in job_queue.jobs()]
-    print(job_names)
-    primo = job_queue.jobs()[0]
-    next_run_time = primo.next_t
-    print(f"Next run of the job is scheduled at: {next_run_time}")
 
+async def send_message(message: str):
+    """Sends message to telegram bot"""
+    bot = Bot(token=TOKEN)
+    await bot.send_message(chat_id=CHANNEL_ID, text=message)
+
+
+def logScheduledJobs(scheduler: AsyncIOScheduler):
+    """View all scheduled jobs
+
+    Parameters
+    ----------
+    scheduler : AsyncIOScheduler
+        It must have at least one scheduled job
+    """
+    msg = f"Scheduled jobs (with timezone= {TIMEZONE}): "
+    for job in scheduler.get_jobs():
+        msg = msg + f"\nJob ID: {job.id}, Next Run: {job.next_run_time}"
+    logging.info(msg)
