@@ -1,0 +1,184 @@
+{
+    "dataSets": [
+       {
+          "action": "Information",
+          "series": {
+             "0:0:0:0:0": {
+                "annotations": [],
+                "attributes": [
+                   null,
+                   null,
+                   null
+                ],
+                "observations": {
+                   "0": [
+                      0.9
+                   ]
+                }
+             }
+          }
+       }
+    ],
+    "header": {
+       "id": "IREFc62d47a0ecbb4051b3568a57209e3883",
+       "prepared": "2024-11-20T16:45:00",
+       "sender": {
+          "id": "SOME_NSI",
+          "name": "unknown"
+       },
+       "test": true
+    },
+    "structure": {
+       "annotations": [],
+       "attributes": {
+          "dataSet": [
+             {
+                "id": "METADATA_EN",
+                "name": "Reference metadata (in English)",
+                "role": "METADATA_EN",
+                "values": []
+             },
+             {
+                "id": "METADATA_IT",
+                "name": "Reference metadata (in Italian)",
+                "role": "METADATA_IT",
+                "values": []
+             }
+          ],
+          "observation": [
+             {
+                "id": "BREAK",
+                "name": "Break",
+                "role": "BREAK",
+                "values": []
+             },
+             {
+                "id": "CONF_STATUS",
+                "name": "Confidentiality status",
+                "role": "CONF_STATUS",
+                "values": []
+             },
+             {
+                "id": "OBS_PRE_BREAK",
+                "name": "Observation pre-break value",
+                "role": "OBS_PRE_BREAK",
+                "values": []
+             },
+             {
+                "id": "OBS_STATUS",
+                "name": "Observation status",
+                "role": "OBS_STATUS",
+                "values": []
+             }
+          ],
+          "series": [
+             {
+                "id": "BASE_PER",
+                "name": "Base period",
+                "role": "BASE_PER",
+                "values": [
+                   {
+                      "id": "2015",
+                      "name": "year 2015"
+                   }
+                ]
+             },
+             {
+                "id": "UNIT_MEAS",
+                "name": "Unit of measurement",
+                "role": "UNIT_MEAS",
+                "values": []
+             },
+             {
+                "id": "UNIT_MULT",
+                "name": "Unit multiplier",
+                "role": "UNIT_MULT",
+                "values": []
+             }
+          ]
+       },
+       "description": "",
+       "dimensions": {
+          "dataset": [],
+          "observation": [
+             {
+                "id": "TIME_PERIOD",
+                "keyPosition": 5,
+                "name": "Select time",
+                "role": "SELECT_TIME",
+                "values": [
+                   {
+                      "end": "2024-10-01T00:00:00",
+                      "id": "2024-10",
+                      "name": "2024-10",
+                      "start": "2024-10-01T00:00:00"
+                   }
+                ]
+             }
+          ],
+          "series": [
+             {
+                "id": "FREQ",
+                "keyPosition": 0,
+                "name": "Frequency",
+                "role": "FREQ",
+                "values": [
+                   {
+                      "id": "M",
+                      "name": "monthly"
+                   }
+                ]
+             },
+             {
+                "id": "COICOP_REV_ISTAT",
+                "keyPosition": 1,
+                "name": "COICOP Rev. Istat",
+                "role": "COICOP_REV_ISTAT",
+                "values": [
+                   {
+                      "id": "00",
+                      "name": "all items"
+                   }
+                ]
+             },
+             {
+                "id": "ITTER107",
+                "keyPosition": 2,
+                "name": "Territory",
+                "role": "ITTER107",
+                "values": [
+                   {
+                      "id": "IT",
+                      "name": "Italy"
+                   }
+                ]
+             },
+             {
+                "id": "MISURA1",
+                "keyPosition": 3,
+                "name": "Measure",
+                "role": "MISURA1",
+                "values": [
+                   {
+                      "id": "7",
+                      "name": "percentage changes on the same period of the previous year"
+                   }
+                ]
+             },
+             {
+                "id": "IND_TYPE",
+                "keyPosition": 4,
+                "name": "Index type",
+                "role": "IND_TYPE",
+                "values": [
+                   {
+                      "id": "39",
+                      "name": "consumer price index for the whole nation (base 2015=100) - monthly data"
+                   }
+                ]
+             }
+          ]
+       },
+       "name": "Nic - monthly data from 2016 onwards(base 2015)"
+    }
+ }

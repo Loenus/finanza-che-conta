@@ -1,13 +1,27 @@
 import os
 import re
 import requests
-import datetime
+import datetime #from datetime
+import schedule
+import time
+import asyncio
+import json
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.events import EVENT_JOB_ERROR
 from zoneinfo import ZoneInfo
 from bs4 import BeautifulSoup
 from telegram.ext import ContextTypes, Application
 from telegram.constants import ParseMode
 from telegram.error import BadRequest, TimedOut
 from dotenv import load_dotenv
+from constants import URL_EU
+from istat import retrieve_inflation
+from euroSTR import retrieve_euro_str
+from utils import next_weekday, check_jobs
+from xml.etree import ElementTree as ET
+from telegram import Bot
+import pytz
 load_dotenv()
 
 import logging
@@ -35,18 +49,16 @@ job_queue = application.job_queue
 # application.add_error_handler(BadRequest, bad_gateway_error_handler)
 # application.add_error_handler(TimedOut, flood_control_error_handler)
 
-def next_weekday(d, weekday):
-    days_ahead = weekday - d.weekday()
-    if days_ahead <= 0: # Target day already happened this week
-        days_ahead += 7
-    return d + datetime.timedelta(days_ahead)
 
-def check_jobs():
-    job_names = [job.name for job in job_queue.jobs()]
-    print(job_names)
-    primo = job_queue.jobs()[0]
-    next_run_time = primo.next_t
-    print(f"Next run of the job is scheduled at: {next_run_time}")
+ENV = os.environ.get('ENV')
+TIMEZONE = os.environ.get('TIMEZONE')
+CHANNEL_ID = os.environ.get('CHANNEL_ID')
+TOKEN = os.environ.get('BOT_TOKEN')
+# Funzione per inviare messaggio su Telegram
+async def send_message(message):
+    bot = Bot(token=TOKEN)
+    await bot.send_message(chat_id=CHANNEL_ID, text=message)
+
 
 
 ### INFLATION ###
@@ -173,26 +185,12 @@ Inflazione nell'*ultimo anno*: {inflations[1]}
         message += "\n\n" + inflations[3]
     
     await context.bot.send_message(chat_id=CHANNEL_ID, text=message, disable_web_page_preview=True, parse_mode = ParseMode.MARKDOWN)
-    #check_jobs()
+    #check_jobs(job_queue)
 
 #################
 
 
 ### EURO STR ###
-
-URL_EU = "https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/index.en.html"
-
-def retrieve_euro_str():
-    response = requests.get(URL_EU)
-    if response.status_code != 200:
-        logging.error(f"Errore nella richiesta HTTP [{response.status_code}]")
-        return "Errore nella richiesta HTTP"
-    soup = BeautifulSoup(response.content, "html.parser")
-    euro_str_value = soup.find('td').strong.text
-    if not euro_str_value:
-        logging.warning('valore di STR eur non trovato.')
-        return 'valore di STR eur non trovato.'
-    return euro_str_value
 
 async def callback_euro_str(context: ContextTypes.DEFAULT_TYPE):
     euro_str_value = retrieve_euro_str()
@@ -202,12 +200,173 @@ async def callback_euro_str(context: ContextTypes.DEFAULT_TYPE):
 ################
 
 
-job_inflation = job_queue.run_once(callback_inflation, datetime.datetime.now(tz=ZoneInfo(TIMEZONE)) + datetime.timedelta(seconds=3))
-if ENV == "dev":
-    job_euro_str = job_queue.run_repeating(callback_euro_str, datetime.timedelta(seconds=15), datetime.datetime.now(tz=ZoneInfo(TIMEZONE))+ datetime.timedelta(seconds=1))
-else:
-    d = datetime.datetime.now(tz=ZoneInfo(TIMEZONE))
-    next_monday = next_weekday(d, 0).replace(hour=8,minute=30,second=0) # 0 = Monday, 1=Tuesday ..
-    logging.info(f"Prima esecuzione per la ricerca dell'EURO STR schedulata per {str(next_monday)}. Successivamente ogni lunedì.")
-    job_euro_str = job_queue.run_repeating(callback_euro_str, datetime.timedelta(weeks=1), next_monday)
-application.run_polling()
+
+
+
+
+
+API_URL = "https://sdmx.istat.it/SDMXWS/rest/data/167_744/M.00.IT.7.39/"
+PARAMS = {
+    "startPeriod": "2024-10-31"
+}
+HEADERS = {
+    "Accept": "application/json"
+}
+
+
+# Funzione per fare la chiamata API e leggere l'XML
+async def fetch_and_process_xml():
+    try:
+        logging.info("dentor la unzione")
+        # Esegui la chiamata all'API
+        response = requests.get(API_URL, params=PARAMS, headers=HEADERS)
+        response.raise_for_status()  # Verifica se la risposta è OK
+
+        logging.info("analizzo risposta")
+        await send_message("sto analizzando")
+        data = response.json()  # Usa il metodo json() per convertire la risposta in un dizionario Python
+
+        #results = data.get("dataSets", [])  # Accedi alla chiave 'results' e ottieni una lista
+        dataset = data["dataSets"][0]  # Primo elemento nella lista "dataSets"
+        series = dataset["series"]  # La chiave "series"
+        
+        # Accedi alla prima chiave in "series" (ad esempio "0:0:0:0:0")
+        first_series_key = next(iter(series))  # Usa iter() per ottenere la prima chiave
+        first_series = series[first_series_key]  # Recupera il valore associato
+        
+        # Accedi a "observations" e alla chiave "0"
+        observations = first_series["observations"]
+        value = observations["0"][0]  # Primo elemento nella lista associata alla chiave "0"
+        
+        return value
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Errore nella richiesta API: {e}")
+
+    except json.JSONDecodeError as e:
+        logging.error(f"Errore nel parsing del JSON: {e}")
+        return f"Errore nel parsing del JSON: {e}"
+
+    except KeyError as e:
+        logging.error(f"Chiave mancante nei dati JSON: {e}")
+        return f"Chiave mancante: {e}"
+
+    except IndexError as e:
+        logging.error(f"Errore negli indici dei dati JSON: {e}")
+        return f"Errore negli indici: {e}"
+
+    except TypeError as e:
+        logging.error(f"Errore di tipo nei dati JSON: {e}")
+        return f"Errore di tipo: {e}"
+
+    except Exception as e:
+        logging.error(f"Errore imprevisto: {e}")
+        return f"Errore imprevisto: {e}"
+
+
+# Funzione per pianificare l'esecuzione del 20 di ogni mese
+async def job():
+    logging.info("entrato nel job")
+    current_date = datetime.datetime.now()
+    #if current_date.day == 20:
+    value = await fetch_and_process_xml()
+    logging.info(f"Valore estratto: {value}")
+
+# Pianifica il task ogni giorno (ma eseguirà la chiamata solo il 20)
+#schedule.every().day.at("08:30").do(lambda: asyncio.create_task(job()))  # Usare lambda per creare task asincroni
+#schedule.every(1).minute.do(lambda: asyncio.create_task(job()))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def error_listener(event):
+    if event.exception:
+        logging.error(f"Job {event.job_id} failed: {event.exception}")
+
+
+
+async def task_monthly():
+    logging.info("Running the monthly task (20th of the month)")
+    value = await fetch_and_process_xml()
+    logging.info(f"Valore estratto: {value}")
+    await send_message(f"ho recuperato il valore: {value}")
+    last_month_date = "bho"
+    last_month_name = "gennaio"
+    message = f"""Secondo [dati ISTAT]({"www.google.com"}) in Italia a {last_month_date}:
+Inflazione nel mese di *{last_month_name}*: {value}
+Inflazione nell'*ultimo anno*: {value}
+"""
+    await send_message(message)
+
+
+async def task_weekly():
+    logging.info("Running the weekly task (every Monday)")
+    euro_str_value = retrieve_euro_str()
+    message = f"[Euro short-term rate]({URL_EU}) (`€STR`) odierno: `{euro_str_value}`"
+    await send_message(message)
+
+
+def error_listener(event):
+    if event.exception:
+        logging.error(f"Job {event.job_id} failed with exception: {event.exception}")
+    else:
+        logging.info(f"Job {event.job_id} completed successfully.")
+
+        # View all scheduled jobs after successful execution
+        logging.info("Upcoming scheduled jobs:")
+        for job in event.scheduler.get_jobs():  # Use event.scheduler to access the scheduler instance
+            logging.info(f"Job ID: {job.id}, Next Run: {job.next_run_time}")
+
+
+
+
+# Avvia il bot e esegue la pianificazione
+def main():
+    #asyncio.run(task_monthly())
+    #asyncio.run(task_weekly())
+    scheduler = AsyncIOScheduler()
+    timezone = pytz.timezone(TIMEZONE)
+
+    scheduler.add_job(task_monthly, CronTrigger(day=20, hour=8, minute=30, timezone=timezone), id="monthly_task")
+    scheduler.add_job(task_weekly, CronTrigger(day_of_week="mon", hour=9, minute=0, timezone=timezone), id="weekly_task")
+
+    scheduler.add_listener(error_listener, EVENT_JOB_ERROR)
+    scheduler.start()
+
+    logging.info("Scheduler started. Tasks are scheduled.")
+    
+    # View all scheduled jobs
+    logging.info("Scheduled jobs:")
+    for job in scheduler.get_jobs():
+        logging.info(f"Job ID: {job.id}, Next Run: {job.next_run_time}")
+
+    asyncio.get_event_loop().run_forever()
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+
+
+    """ job_inflation = job_queue.run_once(callback_inflation, datetime.datetime.now(tz=ZoneInfo(TIMEZONE)) + datetime.timedelta(seconds=3))
+    if ENV == "dev":
+        job_euro_str = job_queue.run_repeating(callback_euro_str, datetime.timedelta(seconds=15), datetime.datetime.now(tz=ZoneInfo(TIMEZONE))+ datetime.timedelta(seconds=1))
+    else:
+        d = datetime.datetime.now(tz=ZoneInfo(TIMEZONE))
+        next_monday = next_weekday(d, 0).replace(hour=8,minute=30,second=0) # 0 = Monday, 1=Tuesday ..
+        logging.info(f"Prima esecuzione per la ricerca dell'EURO STR schedulata per {str(next_monday)}. Successivamente ogni lunedì.")
+        job_euro_str = job_queue.run_repeating(callback_euro_str, datetime.timedelta(weeks=1), next_monday)
+    application.run_polling() """
