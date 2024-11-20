@@ -1,6 +1,6 @@
 python-dotenv
 requests
-python-telegram-bot[job-queue]
+python-telegram-bot
 beautifulsoup4
-schedule
 apscheduler
+python-dateutil

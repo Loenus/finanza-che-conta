@@ -8,10 +8,10 @@ import logging #in py it's a singleton, so it has the same configuration in ever
 from config import load_config
 load_config()
 
-from constants import URL_EU
+from constants import URL_EU, URL_ISTAT
 from istat import retrieve_inflation
 from euroSTR import retrieve_euro_str
-from utils import logScheduledJobs, send_message
+from utils import logScheduledJobs, send_message, get_previous_month_name
 ENV = os.environ.get('ENV')
 TIMEZONE = os.environ.get('TIMEZONE')
 
@@ -21,14 +21,13 @@ TIMEZONE = os.environ.get('TIMEZONE')
 
 async def task_monthly():
     logging.info("## [INFLATION] ## Running the monthly task (20th of the month)")
-    #TODO: fare la funzione parametrizzata in base al mese..
-    value = await retrieve_inflation()
-    logging.info(f"## [INFLATION] ## Valore recuperato dalle API ISTAT: {value}")
-    last_month_date = "bho"
-    last_month_name = "gennaio"
-    message = f"""Secondo [dati ISTAT]({"www.google.com"}) in Italia a {last_month_date}:
-Inflazione nel mese di *{last_month_name}*: {value}
-Inflazione nell'*ultimo anno*: {value}
+    var_congiunturale, var_tendenziale = await retrieve_inflation()
+    logging.info(f"## [INFLATION] ## Valori recuperati dall'API ISTAT" +
+                f" -> var_congiunturale: {var_congiunturale} | " +
+                f"var_tendenziale: {var_tendenziale}")
+    message = f"""Riguardo il NIC, secondo [dati ISTAT]({URL_ISTAT}), in Italia a *{get_previous_month_name()}*:
+variazione percentuale congiunturale: {var_congiunturale}%
+variazione percentuale tendenziale (*inflazione*): {var_tendenziale}%
 """
     await send_message(message)
     logging.info(f"## [INFLATION] ## Message sent to Telegram: {message}")
@@ -56,15 +55,16 @@ def error_listener(event):
 
 
 def main():
-    #asyncio.run(task_monthly())
-    #asyncio.run(task_weekly())
+    if (ENV == "local"):    
+        asyncio.run(task_monthly())
+        asyncio.run(task_weekly())
+        return
+    
     scheduler = AsyncIOScheduler()
     timezone = pytz.timezone(TIMEZONE)
 
-    #triggerMonthly = CronTrigger(day=20, hour=8, minute=31, timezone=timezone)
-    #triggerWeakly = CronTrigger(day_of_week="mon", hour=8, minute=30, timezone=timezone)
-    triggerMonthly = CronTrigger(day=20, hour=21, minute=30, timezone=timezone)
-    triggerWeakly = CronTrigger(day_of_week=2, hour=21, minute=29, timezone=timezone)
+    triggerMonthly = CronTrigger(day=18, hour=8, minute=31, timezone=timezone)
+    triggerWeakly = CronTrigger(day_of_week="mon", hour=8, minute=30, timezone=timezone)
     scheduler.add_job(task_monthly, triggerMonthly, id="monthly_task")
     scheduler.add_job(task_weekly, triggerWeakly, id="weekly_task")
 
