@@ -55,7 +55,6 @@ def error_listener(event):
 
 
 def main():
-    logging.info(f"E QUINDI: {TIMEZONE}")
     if (ENV == "local"):    
         asyncio.run(task_monthly())
         asyncio.run(task_weekly())

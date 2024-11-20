@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.png" alt="Logo" height=170 vspace="1">
+  <img src="resources/logo.png" alt="Logo" height=170 vspace="1">
 </p>
 <h1 align="center">Finanza che conta<br><em>Telegram Bot</em></h1>
 
