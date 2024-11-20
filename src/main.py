@@ -12,8 +12,8 @@ from constants import URL_EU, URL_ISTAT
 from istat import retrieve_inflation
 from euroSTR import retrieve_euro_str
 from utils import logScheduledJobs, send_message, get_previous_month_name
-ENV = os.environ.get('ENV')
-TIMEZONE = os.environ.get('TIMEZONE')
+ENV = os.getenv('ENV')
+TIMEZONE = os.getenv('TIMEZONE')
 
 
 
@@ -55,6 +55,7 @@ def error_listener(event):
 
 
 def main():
+    logging.info(f"E QUINDI: {TIMEZONE}")
     if (ENV == "local"):    
         asyncio.run(task_monthly())
         asyncio.run(task_weekly())
