@@ -20,14 +20,16 @@ TIMEZONE = os.getenv('TIMEZONE')
 ### INFLATION ###
 
 async def task_monthly():
-    logging.info("## [INFLATION] ## Running the monthly task (20th of the month)")
+    logging.info("## [INFLATION] ## Running the monthly task (18th of the month)")
     var_congiunturale, var_tendenziale = await retrieve_inflation()
     logging.info(f"## [INFLATION] ## Valori recuperati dall'API ISTAT" +
                 f" -> var_congiunturale: {var_congiunturale} | " +
                 f"var_tendenziale: {var_tendenziale}")
     message = f"""Riguardo il NIC, secondo [dati ISTAT]({URL_ISTAT}), in Italia a *{get_previous_month_name()}*:
-variazione percentuale congiunturale: {var_congiunturale}%
-variazione percentuale tendenziale (*inflazione*): {var_tendenziale}%
+variazione congiunturale: {var_congiunturale}%
+*inflazione*: {var_tendenziale}%
+
+Metti una stella a [questo mini-progetto](https://github.com/Loenus/finanza-che-conta) disponibile a tutti e completamente gratuito. Grazie ❤️
 """
     await send_message(message)
     logging.info(f"## [INFLATION] ## Message sent to Telegram: {message}")

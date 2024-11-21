@@ -10,12 +10,15 @@ Inserire sempre X.Y.Z, in cui
 
 ### How to test in local
 
-Dentro il .env, aggiungi una variabile del tipo `ENV=local` così che i due scheduler partano una volta sola, senza schedulazione. <br>
+Dentro il .env, aggiungi una variabile del tipo `ENV=local` così che i due scheduler partano una volta sola, senza schedulazione. 
+
 Per farlo partire in locale e testarlo, aprire un terminale nella root del progetto ed eseguire, ad esempio:
 ```
 > /local_build_script.sh
 ```
 In questo modo sulla macchina non rimarrà traccia dell'immagine docker eseguita.
+
+Per testarlo però sarà inoltre necessario creare su telegram un channel, e inserire il @nomeDelCanale come CHANNEL_ID nel .env; poi aprire la chat con BotFather e creare un newbot, e da lì prendersi il token da settare nel .env; infine, dal channel Telegram creato, andare su Subscribers>Add Subscribers e cercare il bot telegram creato e aggiungerlo.
 
 <br>
 <hr>
