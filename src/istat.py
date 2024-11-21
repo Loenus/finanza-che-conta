@@ -43,8 +43,8 @@ async def retrieve_inflation():
         PARAMS = { "startPeriod": get_last_day_of_previous_month() }
         response = requests.get(URL_ISTAT_API, params=PARAMS, headers=HEADERS_JSON)
         response.raise_for_status()  # Verifica se la risposta è OK
+        logging.info(f"## [INFLATION] ## Response: {response.text}")
         data = response.json()
-        logging.info(f"## [INFLATION] ## Response: {data}")
         return extract_values(data)
 
     except requests.exceptions.RequestException as e:
