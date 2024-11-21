@@ -7,6 +7,17 @@ Inserire sempre X.Y.Z, in cui
 - `patch or Z` is incremented after a bug fix.
 
 <br>
+
+### How to test in local
+
+Dentro il .env, aggiungi una variabile del tipo `ENV=local` così che i due scheduler partano una volta sola, senza schedulazione. <br>
+Per farlo partire in locale e testarlo, aprire un terminale nella root del progetto ed eseguire, ad esempio:
+```
+> /local_build_script.sh
+```
+In questo modo sulla macchina non rimarrà traccia dell'immagine docker eseguita.
+
+<br>
 <hr>
 
 ### Link utili
@@ -16,3 +27,4 @@ Inserire sempre X.Y.Z, in cui
 [Docker Image Uploading](https://dev.to/derlin/lets-code-a-reusable-workflow-for-building-state-of-the-art-multi-platform-docker-images-with-github-action-5cj9#tags)<br>
 [Docker Image Uploading 2](https://docs.docker.com/build/ci/github-actions/manage-tags-labels/) <br>
 [Markdown Extended](https://www.markdownguide.org/extended-syntax/#fenced-code-blocks) <br>
+
