@@ -33,4 +33,5 @@ Quindi sarà sufficiente avere una macchina linux su cui eseguire le istruzioni 
 
 Ricordarsi di creare o settare le [variabili d'ambiente](https://docs.docker.com/engine/reference/commandline/run/#env), elencate nel file `.env.sample` <br>
 A tal proposito, see [List of tz database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) for valid options.
+La Timezone è opzionale: se non valorizzata, è Europe/Rome
 

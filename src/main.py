@@ -28,11 +28,11 @@ async def task_monthly():
     message = f"""Riguardo il NIC, secondo [dati ISTAT]({URL_ISTAT}), in Italia a *{get_previous_month_name()}*:
 variazione congiunturale: {var_congiunturale}%
 *inflazione*: {var_tendenziale}%
-
-Metti una stella a [questo mini-progetto](https://github.com/Loenus/finanza-che-conta) disponibile a tutti e completamente gratuito. Grazie ❤️
 """
     await send_message(message)
     logging.info(f"## [INFLATION] ## Message sent to Telegram: {message}")
+    support_message = """Metti una stella a [questo mini-progetto](https://github.com/Loenus/finanza-che-conta) disponibile a tutti e completamente gratuito. Grazie ❤️"""
+    await send_message(support_message)
 
 #################
 
@@ -65,7 +65,7 @@ def main():
     scheduler = AsyncIOScheduler()
     timezone = pytz.timezone(TIMEZONE)
 
-    triggerMonthly = CronTrigger(day=18, hour=8, minute=31, timezone=timezone)
+    triggerMonthly = CronTrigger(day=18, hour=8, minute=33, timezone=timezone)
     triggerWeakly = CronTrigger(day_of_week="mon", hour=8, minute=30, timezone=timezone)
     scheduler.add_job(task_monthly, triggerMonthly, id="monthly_task")
     scheduler.add_job(task_weekly, triggerWeakly, id="weekly_task")
