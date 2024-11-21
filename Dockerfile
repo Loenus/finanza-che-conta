@@ -11,7 +11,6 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY src/ /src/
-COPY .env /src/.env
 WORKDIR /src
 
 CMD ["python", "main.py"]
