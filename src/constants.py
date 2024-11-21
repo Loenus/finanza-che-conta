@@ -8,4 +8,5 @@ MONTH_NAMES = {
     5: "maggio", 6: "giugno", 7: "luglio", 8: "agosto",
     9: "settembre", 10: "ottobre", 11: "novembre", 12: "dicembre"
 }
+
 DEFAULT_TIMEZONE = "Europe/Rome"
