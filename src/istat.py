@@ -3,6 +3,7 @@ import logging
 import json
 from constants import URL_ISTAT_API, HEADERS_JSON
 from utils import get_last_day_of_previous_month
+from requests.adapters import HTTPAdapter, Retry
 
 
 def extract_values(data):
@@ -41,7 +42,18 @@ async def retrieve_inflation():
 
     try:
         PARAMS = { "startPeriod": get_last_day_of_previous_month() }
-        response = requests.get(URL_ISTAT_API, params=PARAMS, headers=HEADERS_JSON)
+        logging.info(f"## [INFLATION] ## Requesting ISTAT API at url: {URL_ISTAT_API} " +
+                     f"| with params: {PARAMS} | with headers: {HEADERS_JSON}")
+        
+        s = requests.Session()
+        retries = Retry(
+            total=5, 
+            backoff_factor=2, 
+            status_forcelist=[ 500, 502, 503, 504 ],
+            allowed_methods={'GET'}
+        )
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+        response = s.get(URL_ISTAT_API, params=PARAMS, headers=HEADERS_JSON, timeout=300)
         response.raise_for_status()  # Verifica se la risposta è OK
         logging.info(f"## [INFLATION] ## Response: {response.text}")
         data = response.json()
